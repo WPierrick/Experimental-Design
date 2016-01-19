@@ -72,3 +72,272 @@ simu.anniv.2 <- function(x){
 sim10 <- sapply(rep(1,10^4), FUN=simu.anniv.2)
 mean(sim10)
 
+#3)
+anniv <- sample.int(365, 30, replace = TRUE)
+
+simu.anniv.3 <- function(x){
+  anniv <- sample.int(365, 30, replace = TRUE)
+  sum(table(anniv)>=3)>=1
+}
+sim11 <- sapply(rep(1,10^4), FUN=simu.anniv.3)
+mean(sim11)
+
+#4)
+simu.anniv.4 <- function(x){
+  anniv <- sample.int(365, 50, replace = TRUE)
+  sum(table(anniv)>=3)>=1
+}
+sim12 <- sapply(rep(1,10^4), FUN=simu.anniv.4)
+mean(sim12)
+
+# Exercice 5)
+
+#1)
+derive <- function(nA=15, n=30, T){
+  evolution <- numeric(T)
+  evolution[1] = nA
+  i =2
+  while (i <= T) {
+  evolution[i] <- rhyper(2*evolution[i-1], 2*(n-evolution[i-1]), k=n, nn=1)
+  i=i +1
+    }
+  return (evolution)
+}
+
+plot(derive(T=100), type="l", xlab = "Generations", ylab="Fixation" )
+# Fonction permettant de simuler t générations successives (pour une réalisation)
+
+#2) 
+repr <- sapply(rep(1,10), FUN = function(x) {derive(T=300)})
+matplot(repr, type="l", xlab = "Générations", ylab = "Nombre d'individus")
+# Evolution du nombre d'individus porteurs de l'allèle A en fonction du temps de génération pour plusieurs réalisations
+
+#3) 
+# On peut voir une fixation ou disparition des allèles après environ plusieurs générations(40 à 150-200, variable selons les individus)
+# Après 100 générations, une estimation visuelle nous montre que la majorité des allèles se évoluent vers 100% ou 0% (2 groupes)
+
+#4)
+derive2 <- function(nA=30, n=60, T){
+  evolution <- numeric(T)
+  evolution[1] = nA
+  i =2
+  while (i <= T) {
+    evolution[i] <- rhyper(2*evolution[i-1], 2*(n-evolution[i-1]), k=n, nn=1)
+    i=i +1
+  }
+  return (evolution)
+}
+
+repr2 <- sapply(rep(1,1000), FUN = function(x) {evolution = derive2(T=50)
+  evolution[50]==0
+  })
+mean(repr2) # On a environ 5% de chances que l'allèle disparaisse après 50 générations
+
+
+#5)
+derive3 <- function(nA, n=60, T){
+  evolution <- numeric(T)
+  evolution[1] = nA
+  i =2
+  while (i <= T) {
+    evolution[i] <- rhyper(2*evolution[i-1], 2*(n-evolution[i-1]), k=n, nn=1)
+    i=i +1
+  }
+  return (evolution)
+}
+
+proba.geneT <- function(n=60, T){
+  res = numeric(61)
+  i = 0
+  while (i <= n) {
+    repr3 <- sapply(rep(1,1000), FUN = function(x) { derive3(nA=i, n, T=T)[T]==0 })
+    mean(repr3)
+    res[i+1]<-mean(repr3)
+    i = i+1
+  }
+  return (res)
+  }
+x <- proba.geneT(T=50)
+plot(x,type="l", xlab = "Population nA", ylab = "Probabilité de disparition")
+
+
+# La probabilité que l'allèle A disparaisse après 50 générations diminue à mesure que le nA initial augmente
+
+#6)
+derive4 <- function(nA=30, n=60, T){
+  evolution <- numeric(T)
+  evolution[1] = nA
+  i =2
+  while (i <= T) {
+    evolution[i] <- rhyper(2*evolution[i-1], 2*(n-evolution[i-1]), k=n, nn=1)
+    i=i +1
+  }
+  return (evolution)
+}
+
+repr4 <- sapply(rep(1,5000), FUN = function(x) {evolution = derive4(T=300)
+evolution[300]==0
+})
+mean(repr4) # On a environ 45% de chances que l'allèle disparaisse après 300 générations
+# Plus le nombre de générations augmente, plus on a de chances que l'allèle se fixe ou disparaisse 
+
+#7)
+#Nous pouvons utiliser le t-test pour que le théorème de limite central soit valide, en augmentant le nombre de réalisation 
+#Car on sait que plus le nombre de réalisation est grand plus on tend vers une loi Normale centrée réduite. 
+t.test(repr4)
+# 95 percent confidence interval:
+# 0.5402476 0.5597524
+
+# On a donc un intervalle de confiance qui borne la moyenne empirique de la probabilité que l'allèle disparaisse
+# Entre 0.54 et 0.55, les données de notre intervalle de confiance sont cohérents la moyenne trouvée
+
+#8)
+
+derive5 <- function(nA, n=60, T){
+  evolution <- numeric(T)
+  evolution[1] = nA
+  i =2
+  while (i <= T) {
+    evolution[i] <- rhyper(2*evolution[i-1], 2*(n-evolution[i-1]), k=n, nn=1)
+    i=i +1
+  }
+  return (evolution)
+}
+
+proba.geneT <- function(n=60, T){
+  res = numeric(61)
+  i = 0
+  while (i <= n) {
+    repr300 <- sapply(rep(1,500), FUN = function(x) { derive5(nA=i, n, T=T)[T]==0 })
+    mean(repr300)
+    res[i+1]<-mean(repr300)
+    i = i+1
+  }
+  return (res)
+}
+x <- proba.geneT(T=300)
+plot(x,type="l", xlab = "Population nA", ylab = "Probabilité de disparition")
+
+# Là encore, la probabilité que l'allèle A disparaisse diminue à mesure que le nA initial augmente.
+# Cependant, le fait d'augmenter le temps de génération linéarise la baisse de la probabilité de disparitionavec l'augmentation de la population nA.
+# Cela s'explique par un plus grand temps de génération.
+
+
+#9)
+derive <- function(nA=15, n=30, T){
+  evolution <- numeric(T)
+  evolution[1] = nA
+  i =2
+  while (i <= T) {
+    evolution[i] <- rhyper(3*evolution[i-1], 2*(n-evolution[i-1]), k=n, nn=1)
+    i=i +1
+  }
+  return (evolution)
+}
+
+repr <- sapply(rep(1,10), FUN = function(x) {derive(T=300)})
+matplot(repr, type="l", xlab = "Générations", ylab = "Nombre d'individus")
+
+#9.3) 
+# Nous pouvons constater que l'allèle A se fixe très rapidement dans la population après seulement quelques générations (<40)
+
+#9.4)
+derive2 <- function(nA=30, n=60, T){
+  evolution <- numeric(T)
+  evolution[1] = nA
+  i =2
+  while (i <= T) {
+    evolution[i] <- rhyper(3*evolution[i-1], 2*(n-evolution[i-1]), k=n, nn=1)
+    i=i +1
+  }
+  return (evolution)
+}
+
+repr2 <- sapply(rep(1,1000), FUN = function(x) {evolution = derive2(T=50)
+evolution[50]==0
+})
+mean(repr2) # On a 0% de chances que l'allèle disparaisse après 50 générations : l'allèle se fixe très rapidement
+
+
+#9.5)
+derive3 <- function(nA, n=60, T){
+  evolution <- numeric(T)
+  evolution[1] = nA
+  i =2
+  while (i <= T) {
+    evolution[i] <- rhyper(3*evolution[i-1], 2*(n-evolution[i-1]), k=n, nn=1)
+    i=i +1
+  }
+  return (evolution)
+}
+
+proba.geneT <- function(n=60, T){
+  res = numeric(61)
+  i = 0
+  while (i <= n) {
+    repr3 <- sapply(rep(1,1000), FUN = function(x) { derive3(nA=i, n, T=T)[T]==0 })
+    mean(repr3)
+    res[i+1]<-mean(repr3)
+    i = i+1
+  }
+  return (res)
+}
+x <- proba.geneT(T=50)
+plot(x,type="l", xlab = "Population nA", ylab = "Probabilité de disparition")
+
+# Après 50 générations, sauf dans les cas où nA est très petit, on a une probabilité de disparition proche de 0%.
+
+#9.6)
+derive4 <- function(nA=30, n=60, T){
+  evolution <- numeric(T)
+  evolution[1] = nA
+  i =2
+  while (i <= T) {
+    evolution[i] <- rhyper(3*evolution[i-1], 2*(n-evolution[i-1]), k=n, nn=1)
+    i=i +1
+  }
+  return (evolution)
+}
+
+repr4 <- sapply(rep(1,5000), FUN = function(x) {evolution = derive4(T=300)
+evolution[300]==0
+})
+mean(repr4) # On a environ 0% de chances que l'allèle disparaisse après 300 générations, c'est cohérent avec les résultats précédents (fixation rapide de l'allèle).
+
+#9.7)
+t.test(repr4)
+# 95 percent confidence interval:
+#  NaN NaN
+
+# Ici, la probabilité étant de 0%, l'intervalle de confiance n'est pas applicable. 
+
+#8)
+
+derive5 <- function(nA, n=60, T){
+  evolution <- numeric(T)
+  evolution[1] = nA
+  i =2
+  while (i <= T) {
+    evolution[i] <- rhyper(3*evolution[i-1], 2*(n-evolution[i-1]), k=n, nn=1)
+    i=i +1
+  }
+  return (evolution)
+}
+
+proba.geneT <- function(n=60, T){
+  res = numeric(61)
+  i = 0
+  while (i <= n) {
+    repr300 <- sapply(rep(1,500), FUN = function(x) { derive5(nA=i, n, T=T)[T]==0 })
+    mean(repr300)
+    res[i+1]<-mean(repr300)
+    i = i+1
+  }
+  return (res)
+}
+x <- proba.geneT(T=300)
+plot(x,type="l", xlab = "Population nA", ylab = "Probabilité de disparition")
+
+# Là encore, on a une probabilité de disparition proche de 0%.
+
+
