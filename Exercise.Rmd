@@ -1,0 +1,92 @@
+---
+title: "Compte rendu TD 2 : Exercice 3"
+author: "Majda Arif et Pierrick Wainschtein"
+date: "22 janvier 2016"
+output: pdf_document
+---
+
+Nous voulons simuler deux populations, une saine et une malade, et étudier quelle est la meilleure répartition entre les deux populations pour avoir un plan d'expérience le plus optimisé possible avec un budget total de 10000 euros et un coût de mesure de 400 euros pour un patient sain et 100 euros pour un patient malade.
+
+#####**1. Détecter des différences entre 2 populations avec une différence de moyennes de 1.**
+
+
+Fonction permettant de créer les deux populations selon une loi normale, de moyenne 10 et 11, et d\'écart-type de 1, puis de tester avec un t-test ces deux populations
+
+```{r, echo=TRUE}
+testgene <- function(n1, n2){
+  patient1 <- rnorm(n1, 10 , sd = 1)
+  patient2 <- rnorm(n2, 11 , sd = 1)
+  
+  t.test(patient1, patient2)$p.value #
+}
+```
+
+Il y aura au maximum (1000/400)-1 =24 patients sains. Nous voulons faire une boucle qui, pour chaque compte de patient sain et de malade, évalue la réussite au t-test entre ces deux populations.
+
+
+```{r, echo=TRUE, tidy=TRUE}
+resul <- list()
+i=1
+# Compteur pour le nombre de patient sains
+for(n1 in 2:24){ 
+"  \n"
+# Génération du nombre de patients malades, en tenant compte du côut total et du coût de chaque opération
+  n2 = (10000 - 400*n1)/100 
+# Sapply réalisé 10000 fois, pourla fonction testgene
+# et pour les différents ratios entre patients sains et malades
+    resul[[i]] <- c(n1, n2, n1+n2, mean( sapply(rep(n1, 10000), FUN=testgene, n2=n2) < 0.05))
+    i = i+1
+}
+# Matrice représentant les résultats et les différents ratios de populations
+mat <- do.call("rbind", resul) 
+mat
+```
+
+
+```{r, echo=TRUE,tidy=TRUE}
+plot(mat[, 1], mat[, 4], xlab = "Nombre de patients sains", ylab = "Pourcentage de réussite au T-test (avec 1000 simulations)")
+lines(mat[, 1], mat[, 4], xlab = "Nombre de patients sains", ylab = "Pourcentage de réussite au T-test (avec 1000 simulations)")
+
+```
+
+
+En plottant nos résulats, nous pouvons constater que le nombre optimal de patients sains se situe entre 16 et 18 avec 36 à 28 patients malades.
+
+
+
+#####**2. Détecter des différences avec une différence de moyennes de 0.5.**
+
+
+
+
+```{r, echo=TRUE, tidy=TRUE}
+# Fonction créant nos populations et faisant un t-test dessus
+testgene <- function(n1, n2){ 
+  patient1 <- rnorm(n1, 10 , sd = 1)
+  patient2 <- rnorm(n2, 10.5 , sd = 1)
+  
+  t.test(patient1, patient2)$p.value
+}
+
+resul <- list()
+# Boucle pour tester notre fonction un grand nombre de fois avec différents ratios de populations sains/malades
+i=1
+for(n1 in 2:24){ 
+  n2 = (10000 - 400*n1)/100
+  resul[[i]] <- c(n1, n2, n1+n2, mean( sapply(rep(n1, 10000), FUN=testgene, n2=n2) < 0.05))
+  i = i+1
+}
+mat <- do.call("rbind", resul)
+mat
+```
+
+
+
+```{r, echo=TRUE, tidy=TRUE}
+plot(mat[, 1], mat[, 4], xlab = "Nombre de patients sains", ylab = "Pourcentage de réussite au T-test (avec 1000 simulations)")
+lines(mat[, 1], mat[, 4], xlab = "Nombre de patients sains", ylab = "Pourcentage de réussite au T-test (avec 1000 simulations)")
+
+```
+
+
+En plottant nos résulats, nous pouvons constater que le nombre optimal de patients sains est 16 avec 36 patients malades, en notant tout de même un pourcentage de réussite au T-test beaucoup plus faible avec une différence de moyenne de 0.5 que 1.
